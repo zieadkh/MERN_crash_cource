@@ -1,0 +1,22 @@
+{
+  "name": "mern_crash-course",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "npm install --prefix Back_end && npm install --prefix Front_end && npm run build --prefix Front_end",
+    "start": "npm run start --prefix Back_end"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zieadkh/MERN_crash_cource.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zieadkh/MERN_crash_cource/issues"
+  },
+  "homepage": "https://github.com/zieadkh/MERN_crash_cource#readme"
+}
