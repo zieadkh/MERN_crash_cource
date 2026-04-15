@@ -39,10 +39,54 @@ This split allows hosting the frontend as a static site (Vercel/Netlify) while s
 - Rate limiting: Upstash Redis (`@upstash/ratelimit`, `@upstash/redis`)
 - Dev tooling: nodemon, dotenv
 
-## Project structure (high level)
+## Project structure 
 
-- `Back_end/` — Express API, controllers, models, middleware
-- `Front_end/` — React app, components, pages, utility wrappers
+- `Back_end/` — Express API and server-side code
+	- `package.json` — backend dependencies and npm scripts (e.g., `dev`, `start`).
+	- `src/`
+		- `server.js` — Express app entry point (middleware registration, route mounting, server bootstrap).
+		- `config/`
+			- `db.js` — Mongoose connection and connection helpers.
+			- `upstash.js` — Upstash Redis client setup and helpers (used by rate limiting).
+		- `controllers/`
+			- `notesController.js` — handlers for notes CRUD operations (create, read, update, delete). Maps request input to model operations and responses.
+		- `middleware/`
+			- `ratelimiter.js` — rate limiting middleware using Upstash and `@upstash/ratelimit`. Applies to sensitive endpoints to prevent abuse.
+		- `models/`
+			- `Note.js` — Mongoose schema and model for notes (fields, validation, timestamps, any indexes).
+		- `routes/`
+			- `notesRoutes.js` — Express Router defining REST endpoints (e.g., `GET /api/notes`, `POST /api/notes`, `PUT /api/notes/:id`, `DELETE /api/notes/:id`) and wiring them to controller functions.
+	- `.env` (local / not committed) — environment variables such as `MONGO_URI`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and any other secrets used by the backend.
+
+- `Front_end/` — React single-page application (Vite)
+	- `package.json` — frontend dependencies and scripts (`dev`, `build`, `preview`).
+	- `index.html` — Vite entry HTML template.
+	- `src/`
+		- `main.jsx` — React entrypoint, renders `<App />`, configures global providers (router, state providers, etc.).
+		- `App.jsx` — top-level application component and route layout.
+		- `index.css` — global CSS (Tailwind base + custom utilities).
+		- `components/` — reusable UI components
+			- `Navbar.jsx` — top navigation bar, links, and branding.
+			- `NoteCard.jsx` — compact UI card used to display a single note in lists.
+			- `NotesNotFound.jsx` — empty-state component shown when no notes are present.
+			- `RateLimitedUI.jsx` — UI element to inform users when the app is rate-limited.
+		- `lib/` — small libraries and client helpers
+			- `axios.js` — pre-configured Axios instance with base URL and interceptors for auth / error handling.
+			- `utils.js` — utility helpers (date formatting, small helpers used across components).
+		- `pages/` — page-level components used by routes
+			- `HomePage.jsx` — lists notes, handles fetching and optimistic UI updates.
+			- `CreatePage.jsx` — form and logic for creating or editing a note.
+			- `NoteDetailPage.jsx` — full detail view for a single note and related actions.
+	- `vite.config.js`, `tailwind.config.js`, `postcss.config.js` — build tooling and styling configuration files.
+	- `public/` — static assets served by Vite (favicons, images, etc.).
+
+How these parts work together
+
+- Frontend `src/lib/axios.js` points at the backend API (for local dev this is typically `http://localhost:<BACKEND_PORT>/api`).
+- Backend exposes REST endpoints under `/api/notes` implemented in `Back_end/src/routes/notesRoutes.js`, which call controller functions in `Back_end/src/controllers/notesController.js` that use the Mongoose `Note` model.
+- Rate limiting is enforced in `Back_end/src/middleware/ratelimiter.js` using the Upstash client from `Back_end/src/config/upstash.js`.
+
+This detailed layout should make it easy to find where a feature lives, add new endpoints, or extend the UI with additional components and pages.
 
 ## Environment variables
 
